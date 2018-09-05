@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>show map</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+	<link rel="stylesheet" href="libs/leaflet/leaflet.css" />
+	<script src="libs/leaflet/leaflet.js"></script>
+	<script src="libs/leaflet/Google.js"></script>
+	<script type="text/javascript" src="data/countries.geojson"></script>
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
+	<style type="text/css">
+		#map{
+			height: 400px;
+		}
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+	<script>
+		var countriesLayer
+
+		function highlightFeature(e){
+			var layer = e.target
+			layer.setStyle(
+				{
+					weight:5,
+					color:'blue',
+					fillColor:'white',
+					fillOpacity:0.2
+				}
+			);
+		}
+		function resetHighlight(e){
+			countriesLayer.resetStyle(e.target);
+		}
+		function zoomToFeature(e){
+			map.fitBounds(e.target.getBounds());
+		}
+		    
+		function diffPopup(e){
+			bindPopup('<h1>'+feature.properties.f1+'</h1><p>name: '+feature.properties.f2+'</p>');
+		}
+		function countriesOnEachFeature(feature,layer){
+			layer.on({
+				mouseover:highlightFeature,diffPopup,
+				mouseout: resetHighlight,
+				click: zoomToFeature,
+				
+			});
+		}
+		function getCountryColor(popEst){
+	 		if(popEst >100000000){
+	 			return 'red';
+	 		}else if (popEst >50000000) {
+	 			return 'blue';
+	 		}else{
+	 			return 'green';
+	 		}
+	 	}
+		function countriesStyle(feature){
+	 		return{
+	 			fillColor:getCountryColor(feature.properties.pop_est),
+	 			weight:2,
+	 			opacity:1,
+	 			color:'white',
+	 			dashArray :3,
+	 			fillOpacity: 0.7
+	 		}
+	 	}
+	 	
+		var map = L.map('map').setView([43.8476, 18.3564],13);
+		/*var googleLayer  = new L.Google();
+		map.addLayer(googleLayer);*/
+		countriesLayer = L.geoJson(
+			countries,
+			{
+				style: countriesStyle,
+				onEachFeature:countriesOnEachFeature
+			}
+			).addTo(map);
+		map.fitBounds(countriesLayer.getBounds());
+		
+
+		/*var point = [12.000000, 4.000000];
+		var marker = L.marker(point).addTo(map);*/
+		var points = [12.000000, 2.000000]
+		var circle = L.circle(
+			points,
+			10000,
+				{
+					color:'purple',
+					fillOpacity:0.8,
+					fillColor:'red'
+				}
+				).addTo(map);
+
+		/*var pointer = [12.456320, 4.765430];
+		var greenIcon = L.icon(
+					 	{
+					 		iconUrl: 'https://leafletjs.com/docs/images/leaf-green.png',
+  				shadowUrl: 'https://leafletjs.com/docs/images/leaf-shadow.png',
+					 		iconSize: [34,95],
+					 		shadowSize : [50,64],
+					 		iconAnchor: [22, 94],
+					 		popupAnchor:[-3, -76]
+					 	}
+				); */
+				//var marker = L.marker(pointer, {icon:greenIcon}).addTo(map);
+				var pointer = [12.456320, 4.765430];
+				var marker = L.marker(pointer).addTo(map);
+				var myMarker = L.marker(pointer);
+			 	myMarker.addTo(map);
+			 	myMarker.bindPopup(
+			 		'<b>name of place: this is not actually a place but i am testing my code</b> <div> <img src="libs/leaflet/images/bui.jpg" style="width:100%"/></div>', 
+			 		{
+			 			minWidth : 256
+			 		}
+			 		);
+
+	</script>		 
+</body>
+</html>                     	 
