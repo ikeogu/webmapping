@@ -14,8 +14,8 @@
 	<link href="css/blog.css" rel="stylesheet">	
 	<link rel="stylesheet" type="text/css" href="css/leaflet-sidebar.css">
 	<link rel="stylesheet" type="text/css" href="css.css">
-	<link href="https://cdn.osmbuildings.org/4.0.0/OSMBuildings.css" rel="stylesheet">
-  	<script src="https://cdn.osmbuildings.org/4.0.0/OSMBuildings.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/leaflet-search.css">
+	<script type="text/javascript" src="js/leaflet-search.js"></script>
 	<script type="text/javascript" src="js/bootstrap.min.js" ></script>
 	<script type="text/javascript" src="data/unipot.geojson"></script>
 	<script type="text/javascript" src="data/unique.geojson"></script>
@@ -37,6 +37,42 @@
             text-align: justify;
             color: #AAA;
         }
+
+        .leaflet-marker-icon {
+	color: #fff;
+	font-size: 16px;
+	line-height: 16px;	
+	text-align: center;
+	vertical-align: middle;
+	box-shadow: 2px 1px 4px rgba(0,0,0,0.3);
+	border-radius: 8px;
+	border:1px solid #fff;
+}
+.search-tip b {
+	color: #fff;
+}
+.bar.search-tip b,
+.bar.leaflet-marker-icon {
+	background: #f66
+}
+.pharmacy.search-tip b,
+.pharmacy.leaflet-marker-icon {
+	background: #f6f
+}
+.uniport.search-tip b,
+.uniport.leaflet-marker-icon {
+	background: #66f
+}
+.search-tip {
+	white-space: nowrap;
+}
+.search-tip b {
+	display: inline-block;
+	clear: left;
+	float: right;
+	padding: 0 4px;
+	margin-left: 4px;
+}
 	</style>
 	
 </head>
@@ -138,7 +174,32 @@
 			 onEachFeature: onEachFeature
 		}).addTo(map);
 
-
+	geojsonOpts = {
+			pointToLayer: function(feature, latlng) {
+				return L.marker(latlng, {
+					icon: L.divIcon({
+						className: feature.properties.amenity,
+						iconSize: L.point(16, 16),
+						html: feature.properties.amenity[0].toUpperCase(),
+					})
+				}).bindPopup(feature.properties.amenity+'<br><b>'+feature.properties.name+'</b>');
+			}
+		};
+		var poiLayers = L.layerGroup(
+		L.geoJson(uniport, geojsonOpts)
+		
+	)
+	.addTo(map);
+	L.control.search({
+		layer: poiLayers,
+		initial: false,
+		propertyName: 'name',
+		buildTip: function(text, val) {
+			var type = val.layer.feature.properties.amenity;
+			return '<a href="#" class="'+type+'">'+text+'<b>'+type+'</b></a>';
+		}
+	})
+	.addTo(map);
     </script>
 </body>
 </html>
