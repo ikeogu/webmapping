@@ -15,7 +15,7 @@
 	<link rel="stylesheet" type="text/css" href="css/leaflet-sidebar.css">
 	<link rel="stylesheet" type="text/css" href="css.css">
 	<link rel="stylesheet" type="text/css" href="css/leaflet-search.css">
-	<script type="text/javascript" src="js/leaflet-search.js"></script>
+	
 	<script type="text/javascript" src="js/bootstrap.min.js" ></script>
 	<script type="text/javascript" src="data/unipot.geojson"></script>
 	<script type="text/javascript" src="data/unique.geojson"></script>
@@ -80,7 +80,7 @@
 	<header>
 		<div>
 			<div class="row">
-				<div class="col-lg-2 logo">
+				<div class="col-lg-2 col-sm-logo">
 					<img src="UNIPORT.png" height="80px" width="80px" style="margin-left:110px">
 				</div>
 				<div  class="logo">
@@ -100,11 +100,11 @@
 		<div class="blog-masthead">
 	      <div class="container">
 	        <nav class="blog-nav">
-	          <a class="blog-nav-item " href="#">Home</a>
+	          <a class="blog-nav-item " href="index.php">Home</a>
 	          <a class="blog-nav-item" href="#">New features</a>
 	          <a class="blog-nav-item" href="#">Press</a>
 	          <a class="blog-nav-item" href="#">New hires</a>
-	          <a class="blog-nav-item active" href="map.php">Map of Uniport</a>
+	          <a class="blog-nav-item active" href="uniport.html">Map of Uniport</a>
 	        </nav>
 	      </div>
 	    </div>
@@ -118,7 +118,7 @@
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
         integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
         crossorigin=""></script>
-    <script src="../js/leaflet-sidebar.js"></script>
+ 	<script type="text/javascript" src="js/leaflet-search.js"></script>
     <script type="text/javascript">
 
     	var map = L.map('map').setView([4.8981, 6.9226],13);
@@ -166,13 +166,48 @@
 		  if(feature.properties.building === "yes") return true;
 		}
 
-		L.geoJson(uniport, {
-			 pointToLayer: function (feature, latlng) {
-				return L.marker(latlng, {icon: greenIcon});
-			 },
-			 filter: soffParkingFilter,
-			 onEachFeature: onEachFeature
-		}).addTo(map);
+		var featuresLayer = new L.geoJson(uniport, {
+						style: function(feature) {
+							return {color: feature.properties.color };
+						},
+						onEachFeature: function(feature, marker) {
+							marker.bindPopup('<h4 style="color:'+feature.properties.color+'">'+ feature.properties.name +'</h4>'+  '<img src="' + feature.properties.image + '" width="200px" height="200px">');
+						},
+						filter: soffParkingFilter,
+			 			
+					});
+
+		map.addLayer(featuresLayer);
+
+		var searchControl = new L.Control.Search({
+		layer: featuresLayer,
+		propertyName: 'name',
+		marker: false,
+			moveToLocation: function(latlng, title, map) {
+				//map.fitBounds( latlng.layer.getBounds() );
+				var zoom = map.getBoundsZoom(latlng.layer.getBounds());
+	  			map.setView(latlng, zoom); // access the zoom
+			}
+		});
+
+		searchControl.on('search:locationfound', function(e) {
+			
+			//console.log('search:locationfound', );
+
+			//map.removeLayer(this._markerSearch)
+
+			e.layer.setStyle({fillColor: '#3f0', color: '#0f0'});
+			if(e.layer._popup)
+				e.layer.openPopup();
+
+		}).on('search:collapsed', function(e) {
+
+			featuresLayer.eachLayer(function(layer) {	//restore feature color
+				featuresLayer.resetStyle(layer);
+			});	
+		});
+		
+		map.addControl( searchControl );  //inizialize search control
 
 	geojsonOpts = {
 			pointToLayer: function(feature, latlng) {
@@ -190,16 +225,7 @@
 		
 	)
 	.addTo(map);
-	L.control.search({
-		layer: poiLayers,
-		initial: false,
-		propertyName: 'name',
-		buildTip: function(text, val) {
-			var type = val.layer.feature.properties.amenity;
-			return '<a href="#" class="'+type+'">'+text+'<b>'+type+'</b></a>';
-		}
-	})
-	.addTo(map);
+	
     </script>
 </body>
 </html>

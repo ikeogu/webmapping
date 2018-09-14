@@ -144,7 +144,58 @@
 			            attribution: 'Map data &copy; OpenStreetMap contributors'
 			        }).addTo(map);
 
-			
+				var featuresLayer = new L.geoJson(uniport, {
+						style: function(feature) {
+							return {color: feature.properties.color };
+						},
+						onEachFeature: function(feature, marker) {
+							marker.bindPopup('<h4 style="color:'+feature.properties.color+'">'+ feature.properties.name +'</h4>');
+						}
+					});
+
+				map.addLayer(featuresLayer);
+
+					
+
+					var searchControl = new L.Control.Search({
+						layer: featuresLayer,
+						propertyName: 'name',
+						marker: false,
+						moveToLocation: function(latlng, title, map) {
+							//map.fitBounds( latlng.layer.getBounds() );
+							var zoom = map.getBoundsZoom(latlng.layer.getBounds());
+				  			map.setView(latlng, zoom); // access the zoom
+						}
+					});
+
+					searchControl.on('search:locationfound', function(e) {
+						
+						//console.log('search:locationfound', );
+
+						//map.removeLayer(this._markerSearch)
+
+						e.layer.setStyle({fillColor: '#3f0', color: '#0f0'});
+						if(e.layer._popup)
+							e.layer.openPopup();
+
+					}).on('search:collapsed', function(e) {
+
+						featuresLayer.eachLayer(function(layer) {	//restore feature color
+							featuresLayer.resetStyle(layer);
+						});	
+					});
+					
+					map.addControl( searchControl );  //inizialize search control
+
+
+				///////
+
+				L.geoJson(uniport, {
+				    onEachFeature: function(feature, layer) {
+				        var p = layer.feature.properties;
+				        p.index = p.name + " | " + p.address + " | " + p.;
+				    }
+				}).addTo(map);
 				
 							
 	</script>
